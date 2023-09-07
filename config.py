@@ -1,11 +1,17 @@
 import os
 from functools import lru_cache
 
-app_dir = os.path.abspath(os.path.dirname(__file__))
-
 
 class BaseConfig:
     SECRET_KEY = os.environ.get('SECRET_KEY')
+
+    DATABASE_URL = (f'postgresql://'
+                    f'{os.getenv("POSTGRES_USER")}:'
+                    f'{os.getenv("POSTGRES_PASSWORD")}@'
+                    f'{os.getenv("POSTGRES_HOST")}:'
+                    f'{os.getenv("POSTGRES_PORT")}/'
+                    f'{os.getenv("POSTGRES_DB")}')
+    DATABASE_CONNECT_DICT: dict = {}
 
 
 class DevelopementConfig(BaseConfig):

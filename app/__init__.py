@@ -1,7 +1,8 @@
 from flask import Flask
-import os
+
+from config import settings
 
 app = Flask(__name__)
-app.config.from_object(os.environ.get('FLASK_ENV') or 'config.DevelopementConfig')
+app.config.from_object(settings)
 
 from . import views

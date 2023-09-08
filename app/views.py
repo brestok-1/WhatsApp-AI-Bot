@@ -9,8 +9,9 @@ from .radist_utils import send_answer
 
 @app.route('/', methods=['POST'])
 def webhook():
-    incoming_message = request.values.get('Body', '')
-    user_id = int(request.values.get('WaId' ''))
+    event = request.json['event']
+    incoming_message = event['message']['text']['text']
+    user_id = event['contact_id']
     with db_context() as session:
         user = session.query(User).filter_by(id=user_id).one_or_none()
         if not user:

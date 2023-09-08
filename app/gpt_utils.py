@@ -7,12 +7,8 @@ from config import env
 from database import db_context
 
 
-def get_gpt_answer(message: str, user_id) -> str:
+def get_gpt_answer(message: str, user: User) -> str:
     with db_context() as session:
-        user = session.query(User).filter_by(id=user_id).one_or_none()
-        if not user:
-            user = User(id=user_id)
-            session.add(user)
         session_id = user.conversation
         if session_id:
             response = _get_gpt_response(message, session_id)
@@ -20,9 +16,9 @@ def get_gpt_answer(message: str, user_id) -> str:
         else:
             session_id = _create_session_id(user)
             user.conversation = session_id
+            session.add(user)
             response = _get_gpt_response(message, session_id)
             answer = _parse_gpt_response(response)
-            session.commit()
     return answer
 
 
@@ -34,7 +30,7 @@ def _get_gpt_response(message: str, session_id) -> dict:
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        'authorization': f'Bearer {env("API_KEY")}'
+        'authorization': f'Bearer {env("GPT_API_KEY")}'
     }
     response = requests.post(url, json=payload, headers=headers)
     return response.json()
@@ -53,7 +49,7 @@ def _create_session_id(user: User) -> str:
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
-        "authorization": f"Bearer {env('API_KEY')}"
+        "authorization": f"Bearer {env('GPT_API_KEY')}"
     }
 
     response = requests.post(url, json=payload, headers=headers)

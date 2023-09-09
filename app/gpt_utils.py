@@ -1,14 +1,22 @@
-import os
-
 import requests
+from celery import shared_task
 
 from app.models import User
+from app.radist_utils import send_answer
 from config import env
 from database import db_context
 
+HEADERS = {
+    "accept": "application/json",
+    "content-type": "application/json",
+    'X-Api-Key': env('RADIST_API_KEY'),
+}
 
-def get_gpt_answer(message: str, user_id: int) -> str:
+
+@shared_task
+def get_gpt_answer(message: str, user_id: int, chat_id: int) -> str:
     with db_context() as session:
+        print('Запуск')
         user = session.query(User).filter_by(id=user_id).one_or_none()
         if not user:
             user = User(id=user_id)
@@ -24,6 +32,7 @@ def get_gpt_answer(message: str, user_id: int) -> str:
             response = _get_gpt_response(message, session_id)
             answer = _parse_gpt_response(response)
             session.commit()
+    send_answer(answer=answer, chat_id=chat_id)
     return answer
 
 

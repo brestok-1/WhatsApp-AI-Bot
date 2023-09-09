@@ -9,6 +9,9 @@ env.read_env()
 class BaseConfig:
     SECRET_KEY = env('SECRET_KEY')
 
+    CELERY_BROKER_URL = env('CELERY_BROKER_URL'),
+    CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
+
     DATABASE_URL = (f'postgresql://'
                     f'{env("POSTGRES_USER")}:'
                     f'{env("POSTGRES_PASSWORD")}@'
@@ -18,7 +21,7 @@ class BaseConfig:
     DATABASE_CONNECT_DICT: dict = {}
 
 
-class DevelopementConfig(BaseConfig):
+class DevelopmentConfig(BaseConfig):
     DEBUG = True
 
 
@@ -31,9 +34,9 @@ class ProductionConfig(BaseConfig):
 
 
 @lru_cache()
-def get_settings() -> DevelopementConfig | ProductionConfig | TestingConfig:
+def get_settings() -> DevelopmentConfig | ProductionConfig | TestingConfig:
     config_cls_dict = {
-        'development': DevelopementConfig,
+        'development': DevelopmentConfig,
         'production': ProductionConfig,
         'testing': TestingConfig
     }

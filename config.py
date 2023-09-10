@@ -8,7 +8,6 @@ env.read_env()
 
 class BaseConfig:
     SECRET_KEY = env('SECRET_KEY')
-
     CELERY_BROKER_URL = env('CELERY_BROKER_URL'),
     CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
 

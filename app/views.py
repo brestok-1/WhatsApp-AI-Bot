@@ -1,5 +1,5 @@
 from flask import request
-from .gpt_utils import get_gpt_answer
+from .tasks import get_gpt_answer
 
 
 def webhook():
@@ -13,4 +13,4 @@ def webhook():
         get_gpt_answer.delay(incoming_message, user_id, chat_id)
     else:
         print('Отправил бот!!!')
-    return "Poshel nahui"
+    return "Ok"

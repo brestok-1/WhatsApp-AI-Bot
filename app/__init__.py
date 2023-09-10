@@ -17,4 +17,4 @@ def create_app() -> Flask:
     return app
 
 
-from . import views, models, gpt_utils
+from . import views, models, tasks

@@ -1,10 +1,7 @@
 import requests
-from celery import shared_task
 
 from app.models import User
-from app.radist_utils import send_answer
 from config import env
-from database import db_context
 
 HEADERS = {
     "accept": "application/json",
@@ -13,30 +10,21 @@ HEADERS = {
 }
 
 
-@shared_task
-def get_gpt_answer(message: str, user_id: int, chat_id: int) -> str:
-    with db_context() as session:
-        print('Запуск')
-        user = session.query(User).filter_by(id=user_id).one_or_none()
-        if not user:
-            user = User(id=user_id)
-            session.add(user)
-        session_id = user.conversation
-        if session_id:
-            response = _get_gpt_response(message, session_id)
-            answer = _parse_gpt_response(response)
-        else:
-            session_id = _create_session_id(user)
-            user.conversation = session_id
-            session.add(user)
-            response = _get_gpt_response(message, session_id)
-            answer = _parse_gpt_response(response)
-            session.commit()
-    send_answer(answer=answer, chat_id=chat_id)
-    return answer
+def send_answer(answer: str, chat_id: int):
+    url = f'https://api.radist.online/v2/companies/{env("COMPANY_ID")}/messaging/messages/'
+    body = {
+        "connection_id": env('CONNECTION_ID'),
+        "chat_id": chat_id,
+        "mode": "async",
+        "message_type": "text",
+        "text": {
+            "text": f"{answer}"
+        }
+    }
+    requests.post(url, headers=HEADERS, json=body)
 
 
-def _get_gpt_response(message: str, session_id) -> dict:
+def get_gpt_response(message: str, session_id) -> dict:
     url = f"https://app.customgpt.ai/api/v1/projects/{env('GPT_MODEL')}/conversations/{session_id}/messages?stream=false&lang=en"
     payload = {
         'prompt': message
@@ -50,13 +38,13 @@ def _get_gpt_response(message: str, session_id) -> dict:
     return response.json()
 
 
-def _parse_gpt_response(response: dict) -> str:
+def parse_gpt_response(response: dict) -> str:
     answer = response['data']['openai_response']
     answer = answer[:4000]
     return answer
 
 
-def _create_session_id(user: User) -> str:
+def create_session_id(user: User) -> str:
     url = f"https://app.customgpt.ai/api/v1/projects/{env('GPT_MODEL')}/conversations"
 
     payload = {"name": str(user.id)}

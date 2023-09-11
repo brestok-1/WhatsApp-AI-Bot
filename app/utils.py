@@ -2,6 +2,7 @@ import requests
 
 from app.models import User
 from config import env
+from database import redis
 
 HEADERS = {
     "accept": "application/json",
@@ -24,7 +25,7 @@ def send_answer(answer: str, chat_id: int):
     requests.post(url, headers=HEADERS, json=body)
 
 
-def get_gpt_response(message: str, session_id : int) -> dict:
+def get_gpt_response(message: str, session_id: int) -> dict:
     url = f"https://app.customgpt.ai/api/v1/projects/{env('GPT_MODEL')}/conversations/{session_id}/messages?stream=false&lang=en"
     payload = {
         'prompt': message
@@ -58,3 +59,7 @@ def create_session_id(user: User) -> str:
     print(response.json())
     session_id = response.json()['data']['session_id']
     return session_id
+
+
+def is_user_exist(user_id: str):
+    res = redis.get(f'is_user_exists:{user_id}')

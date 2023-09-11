@@ -12,10 +12,11 @@ def create_app() -> Flask:
     views_bp = Blueprint('views', __name__)
     from .views import webhook
     views_bp.add_url_rule('/', view_func=webhook, methods=['POST'])
-    app.register_blueprint(views_bp)
 
     from .middleware import middleware
     views_bp.before_request(middleware)
+
+    app.register_blueprint(views_bp)
 
     return app
 

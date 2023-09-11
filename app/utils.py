@@ -24,7 +24,7 @@ def send_answer(answer: str, chat_id: int):
     requests.post(url, headers=HEADERS, json=body)
 
 
-def get_gpt_response(message: str, session_id) -> dict:
+def get_gpt_response(message: str, session_id : int) -> dict:
     url = f"https://app.customgpt.ai/api/v1/projects/{env('GPT_MODEL')}/conversations/{session_id}/messages?stream=false&lang=en"
     payload = {
         'prompt': message
